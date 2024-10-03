@@ -2,6 +2,7 @@ import { Module, ValidationPipe } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { APP_PIPE } from '@nestjs/core';
+import { ClienteModule } from './modules/cliente/cliente.module';
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { APP_PIPE } from '@nestjs/core';
     MongooseModule.forRoot(
       `mongodb://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}/?retryWrites=true&w=majority`,
     ),
+    ClienteModule,
   ],
   controllers: [],
   providers: [
