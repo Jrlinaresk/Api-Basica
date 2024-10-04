@@ -1,7 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
-import { ApiProperty } from '@nestjs/swagger'; // Importa ApiProperty
-
+import { ApiProperty } from '@nestjs/swagger';
 @Schema()
 export class Client extends Document {
   @ApiProperty({
@@ -57,7 +56,7 @@ export class Client extends Document {
     required: true,
     minlength: 8,
   })
-  password: string; // necesito tener una contraseña encriptada
+  password: string;
 }
 
 export const ClientSchema = SchemaFactory.createForClass(Client);

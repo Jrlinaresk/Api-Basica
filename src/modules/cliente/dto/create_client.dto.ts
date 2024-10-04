@@ -51,7 +51,7 @@ export class CreateClientDto {
   })
   @IsNotEmpty({ message: 'La contraseña es obligatoria.' })
   @IsString({ message: 'La contraseña debe ser una cadena de texto.' })
-  @Length(8) // Longitud mínima de 8 caracteres
+  @Length(8)
   @Matches(/(?=.*[a-z])/, {
     message: 'debe contener al menos una letra minúscula',
   })

@@ -17,8 +17,7 @@ import { CreateClientDto } from './dto/create_client.dto';
 import { Client } from './schemas/client.schema';
 import { UpdateClientDto } from './dto/update_client';
 import { ClientMessages } from './enums/client-messages.enum';
-import { ClientOperationSummaries } from './enums/client.operation-summaries'; // Asegúrate de importar el enum
-
+import { ClientOperationSummaries } from './enums/client.operation-summaries';
 @ApiTags('Clients')
 @Controller('clients')
 @UseGuards(JwtAuthGuard)
