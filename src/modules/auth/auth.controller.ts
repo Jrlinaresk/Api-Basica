@@ -1,9 +1,11 @@
-import { Controller, Post, Body, Request, UseGuards } from '@nestjs/common';
-import { AuthService } from './auth.service';
-import { CreateClientDto } from '../cliente/dto/create_client.dto';
-import { LocalAuthGuard } from './local-auth.guard';
+import { Controller, Post, HttpStatus, Body } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { CreateClientDto } from '../cliente/dto/create_client.dto';
 import { Client } from '../cliente/schemas/client.schema';
+import { AuthService } from './auth.service';
+import { UserLoginResponseDto } from './dto/login-user-response.dto';
+import { LoginUserDto } from './dto/login-user.dto';
+import { AuthMessages } from './enums/auth-menssages.enum';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -11,30 +13,36 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('register')
-  @ApiOperation({ summary: 'Registrar un nuevo cliente' })
+  @ApiOperation({ summary: AuthMessages.REGISTER_SUMMARY })
   @ApiResponse({
-    status: 201,
-    description: 'Cliente registrado exitosamente.',
+    status: HttpStatus.CREATED,
+    description: AuthMessages.REGISTER_CREATED,
     type: Client,
   })
   @ApiResponse({
-    status: 400,
-    description: 'Solicitud incorrecta, por favor verifica los datos.',
+    status: HttpStatus.BAD_REQUEST,
+    description: AuthMessages.REGISTER_BAD_REQUEST,
   })
   async register(@Body() createClientDto: CreateClientDto) {
     return this.authService.register(createClientDto);
   }
 
-  @UseGuards(LocalAuthGuard)
   @Post('login')
-  @ApiOperation({ summary: 'Iniciar sesión de un cliente' })
+  @ApiOperation({ summary: AuthMessages.LOGIN_SUMMARY })
   @ApiResponse({
-    status: 200,
-    description: 'Inicio de sesión exitoso.',
-    type: String,
+    status: HttpStatus.OK,
+    description: AuthMessages.LOGIN_OK,
+    type: UserLoginResponseDto,
   })
-  @ApiResponse({ status: 401, description: 'Credenciales inválidas.' })
-  async login(@Request() req) {
-    return this.authService.login(req.user);
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: AuthMessages.LOGIN_UNAUTHORIZED,
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: AuthMessages.LOGIN_BAD_REQUEST,
+  })
+  async login(@Body() loginUserDto: LoginUserDto) {
+    return this.authService.login(loginUserDto);
   }
 }

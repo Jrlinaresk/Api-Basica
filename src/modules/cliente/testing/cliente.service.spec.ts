@@ -1,19 +1,19 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getModelToken } from '@nestjs/mongoose';
 import * as bcrypt from 'bcryptjs';
-import { Client } from './schemas/client.schema';
-import { ClientsService } from './cliente.service';
+import { ClientsService } from '../cliente.service';
+import { Client } from '../schemas/client.schema';
 
 const mockClient = {
-  _id: '1',
-  name: 'John Doe',
-  email: 'johndoe@example.com',
-  phone: '123456789',
-  password: 'hashedPassword',
+  _id: '66ff5508dbf3686484eaba87',
+  name: 'Johsan Doe',
+  email: 'johnssdoe@example.com',
+  phone: '123156289',
+  password: 'pL@assword123',
   toObject: jest.fn().mockReturnValue({
-    _id: '1',
-    name: 'John Doe',
-    email: 'johndoe@example.com',
+    _id: '66ff5508dbf3686484eaba87',
+    name: 'Johsan Doe',
+    email: 'johnssdoe@example.com',
   }),
 };
 
@@ -60,9 +60,9 @@ describe('ClientsService', () => {
       jest.spyOn(bcrypt, 'hash').mockResolvedValue('hashedPassword');
 
       const newClient = await service.create({
-        name: 'John Doe',
-        email: 'johndoe@example.com',
-        phone: '123456789',
+        name: 'Johsan Doe',
+        email: 'johnssdoe@example.com',
+        phone: '123156289',
         password: 'password123',
       });
 

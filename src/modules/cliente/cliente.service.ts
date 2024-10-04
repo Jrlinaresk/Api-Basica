@@ -1,15 +1,35 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { Client } from './schemas/client.schema';
 import * as bcrypt from 'bcryptjs';
 import { CreateClientDto } from './dto/create_client.dto';
+import { UpdateClientDto } from './dto/update_client';
+import { ClientMessages } from './enums/client-messages.enum';
 
 @Injectable()
 export class ClientsService {
   constructor(@InjectModel(Client.name) private clientModel: Model<Client>) {}
 
   async create(createClientDto: CreateClientDto): Promise<Client> {
+    const existingClient = await this.findOneByEmail(createClientDto.email);
+    if (existingClient) {
+      throw new ConflictException(ClientMessages.EMAIL_ALREADY_REGISTERED);
+    }
+
+    const findPhone = await this.clientModel.findOne({
+      phone: createClientDto.phone,
+    });
+    if (findPhone) {
+      throw new ConflictException(ClientMessages.PHONE_ALREADY_REGISTERED);
+    }
+
     const hashedPassword = await bcrypt.hash(createClientDto.password, 10);
     const createdClient = await this.clientModel.create({
       ...createClientDto,
@@ -18,41 +38,63 @@ export class ClientsService {
     return createdClient;
   }
 
-  async findAll(email?: string): Promise<Client[]> {
-    if (email) {
-      return this.clientModel.find({ email }).exec();
+  async findAll(): Promise<Client[]> {
+    try {
+      const clients = await this.clientModel.find({}).exec();
+      return clients;
+    } catch (error) {
+      throw new InternalServerErrorException(
+        ClientMessages.CLIENTS_RETRIEVAL_ERROR + error,
+      );
     }
-    return this.clientModel.find().exec();
   }
 
-  async findByEmail(email: string): Promise<Client | null> {
+  async findOneByEmail(email: string): Promise<Client | null> {
     return this.clientModel.findOne({ email }).exec();
   }
 
-  async update(
-    id: string,
-    updateData: Partial<CreateClientDto>,
-  ): Promise<Client> {
+  async update(id: string, updateData: UpdateClientDto): Promise<Client> {
+    if (updateData.email) {
+      const existingClient = await this.clientModel.findOne({
+        email: updateData.email,
+      });
+      if (existingClient && existingClient.id !== id) {
+        throw new ConflictException(ClientMessages.EMAIL_IN_USE);
+      }
+    }
+
     const client = await this.clientModel.findByIdAndUpdate(id, updateData, {
       new: true,
     });
     if (!client) {
-      throw new NotFoundException('Client not found');
+      throw new NotFoundException(ClientMessages.CLIENT_NOT_FOUND);
     }
     return client;
   }
 
   async remove(id: string): Promise<void> {
-    const result = await this.clientModel.findByIdAndDelete(id);
+    if (!Types.ObjectId.isValid(id)) {
+      throw new BadRequestException(ClientMessages.INVALID_CLIENT_ID);
+    }
+
+    let result;
+    try {
+      result = await this.clientModel.findByIdAndDelete(id);
+    } catch (error) {
+      throw new InternalServerErrorException(
+        ClientMessages.DELETE_CLIENT_ERROR + error,
+      );
+    }
+
     if (!result) {
-      throw new NotFoundException('Client not found');
+      throw new NotFoundException(ClientMessages.CLIENT_NOT_FOUND);
     }
   }
 
   async findOne(id: string): Promise<Client> {
     const client = await this.clientModel.findById(id).exec();
     if (!client) {
-      throw new NotFoundException('Client not found');
+      throw new NotFoundException(ClientMessages.CLIENT_NOT_FOUND);
     }
     return client;
   }
@@ -71,7 +113,7 @@ export class ClientsService {
       { new: true },
     );
     if (!updatedClient) {
-      throw new NotFoundException('Client not found');
+      throw new NotFoundException(ClientMessages.CLIENT_NOT_FOUND);
     }
     return updatedClient;
   }

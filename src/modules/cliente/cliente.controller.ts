@@ -8,125 +8,151 @@ import {
   Query,
   Delete,
   UseGuards,
+  HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { JwtAuthGuard } from '../auth/jwt/jwt-auth.guard';
 import { ClientsService } from './cliente.service';
 import { CreateClientDto } from './dto/create_client.dto';
 import { Client } from './schemas/client.schema';
+import { UpdateClientDto } from './dto/update_client';
+import { ClientMessages } from './enums/client-messages.enum';
+import { ClientOperationSummaries } from './enums/client.operation-summaries'; // Asegúrate de importar el enum
 
 @ApiTags('Clients')
 @Controller('clients')
+@UseGuards(JwtAuthGuard)
 export class ClientsController {
   constructor(private readonly clientsService: ClientsService) {}
 
-  @UseGuards(JwtAuthGuard)
   @Post()
-  @ApiOperation({ summary: 'Crear un nuevo cliente' })
+  @ApiOperation({ summary: ClientOperationSummaries.CREATE_CLIENT })
   @ApiResponse({
-    status: 201,
-    description: 'Cliente creado exitosamente.',
+    status: HttpStatus.CREATED,
+    description: ClientMessages.CLIENT_CREATED_SUCCESSFULLY,
     type: Client,
   })
-  @ApiResponse({ status: 400, description: 'Solicitud incorrecta.' })
-  async create(@Body() createClientDto: CreateClientDto) {
-    return this.clientsService.create(createClientDto);
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: ClientMessages.BAD_REQUEST,
+  })
+  async create(@Body() createClientDto: CreateClientDto): Promise<Client> {
+    return await this.clientsService.create(createClientDto);
   }
 
-  @UseGuards(JwtAuthGuard)
   @Get(':id')
-  @ApiOperation({ summary: 'Obtener un cliente por ID' })
+  @ApiOperation({ summary: ClientOperationSummaries.FIND_CLIENT_BY_ID })
   @ApiResponse({
-    status: 200,
-    description: 'Cliente encontrado.',
+    status: HttpStatus.OK,
+    description: ClientMessages.CLIENT_FOUND,
     type: Client,
   })
-  @ApiResponse({ status: 404, description: 'Cliente no encontrado.' })
-  async findOne(@Param('id') id: string) {
-    return this.clientsService.findOne(id);
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: ClientMessages.CLIENT_NOT_FOUND,
+  })
+  async findOne(@Param('id') id: string): Promise<Client> {
+    return await this.clientsService.findOne(id);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @Post('by/email')
+  @ApiOperation({ summary: ClientOperationSummaries.FIND_CLIENTS_BY_EMAIL })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: ClientMessages.CLIENT_BY_EMAIL_FOUND,
+    type: [Client],
+  })
+  async findAll(@Query('email') email: string): Promise<Client> {
+    return await this.clientsService.findOneByEmail(email);
+  }
+
   @Get()
-  @ApiOperation({ summary: 'Obtener todos los clientes' })
+  @ApiOperation({ summary: ClientOperationSummaries.FIND_ALL_CLIENTS })
   @ApiResponse({
-    status: 200,
-    description: 'Lista de clientes.',
+    status: HttpStatus.OK,
+    description: ClientMessages.ALL_CLIENTS_LIST,
     type: [Client],
   })
-  async findAll(@Query('email') email?: string) {
-    return this.clientsService.findAll(email);
+  async findAllClients(): Promise<Client[]> {
+    return await this.clientsService.findAll();
   }
 
-  @UseGuards(JwtAuthGuard)
   @Get('search')
-  @ApiOperation({ summary: 'Buscar clientes por nombre' })
+  @ApiOperation({ summary: ClientOperationSummaries.SEARCH_CLIENTS_BY_NAME })
   @ApiResponse({
-    status: 200,
-    description: 'Lista de clientes encontrados.',
+    status: HttpStatus.OK,
+    description: ClientMessages.CLIENTS_FOUND,
     type: [Client],
   })
   @ApiResponse({
-    status: 404,
-    description: 'No se encontraron clientes con ese nombre.',
+    status: HttpStatus.NOT_FOUND,
+    description: ClientMessages.CLIENT_NOT_FOUND,
   })
-  async search(@Query('name') name: string) {
-    return this.clientsService.findByName(name);
+  async search(@Query('name') name: string): Promise<Client[]> {
+    return await this.clientsService.findByName(name);
   }
 
-  @UseGuards(JwtAuthGuard)
   @Patch(':id/password')
-  @ApiOperation({ summary: 'Actualizar la contraseña de un cliente' })
+  @ApiOperation({ summary: ClientOperationSummaries.UPDATE_CLIENT_PASSWORD })
   @ApiResponse({
-    status: 200,
-    description: 'Contraseña actualizada exitosamente.',
+    status: HttpStatus.OK,
+    description: ClientMessages.PASSWORD_UPDATED_SUCCESSFULLY,
     type: Client,
   })
-  @ApiResponse({ status: 404, description: 'Cliente no encontrado.' })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: ClientMessages.CLIENT_NOT_FOUND,
+  })
   async updatePassword(
     @Param('id') id: string,
     @Body('newPassword') newPassword: string,
-  ) {
-    return this.clientsService.updatePassword(id, newPassword);
+  ): Promise<Client> {
+    return await this.clientsService.updatePassword(id, newPassword);
   }
 
-  @UseGuards(JwtAuthGuard)
   @Get('paginate')
-  @ApiOperation({ summary: 'Paginación de clientes' })
+  @ApiOperation({ summary: ClientOperationSummaries.PAGINATE_CLIENTS })
   @ApiResponse({
-    status: 200,
-    description: 'Clientes paginados.',
+    status: HttpStatus.OK,
+    description: ClientMessages.CLIENTS_PAGINATED,
     type: [Client],
   })
   async paginate(
     @Query('page') page: number = 1,
     @Query('limit') limit: number = 10,
-  ) {
-    return this.clientsService.paginate(page, limit);
+  ): Promise<{ clients: Client[]; total: number }> {
+    return await this.clientsService.paginate(page, limit);
   }
 
-  @UseGuards(JwtAuthGuard)
   @Patch(':id')
-  @ApiOperation({ summary: 'Actualizar información de un cliente' })
+  @ApiOperation({ summary: ClientOperationSummaries.UPDATE_CLIENT_INFO })
   @ApiResponse({
-    status: 200,
-    description: 'Cliente actualizado.',
+    status: HttpStatus.OK,
+    description: ClientMessages.CLIENT_UPDATED,
     type: Client,
   })
-  @ApiResponse({ status: 404, description: 'Cliente no encontrado.' })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: ClientMessages.CLIENT_NOT_FOUND,
+  })
   async update(
     @Param('id') id: string,
-    @Body() updateClientDto: Partial<CreateClientDto>,
-  ) {
-    return this.clientsService.update(id, updateClientDto);
+    @Body() updateClientDto: UpdateClientDto,
+  ): Promise<Client> {
+    return await this.clientsService.update(id, updateClientDto);
   }
 
-  @UseGuards(JwtAuthGuard)
   @Delete(':id')
-  @ApiOperation({ summary: 'Eliminar un cliente' })
-  @ApiResponse({ status: 204, description: 'Cliente eliminado exitosamente.' })
-  @ApiResponse({ status: 404, description: 'Cliente no encontrado.' })
-  async remove(@Param('id') id: string) {
-    return this.clientsService.remove(id);
+  @ApiOperation({ summary: ClientOperationSummaries.DELETE_CLIENT })
+  @ApiResponse({
+    status: HttpStatus.NO_CONTENT,
+    description: ClientMessages.CLIENT_DELETED_SUCCESSFULLY,
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: ClientMessages.CLIENT_NOT_FOUND,
+  })
+  async remove(@Param('id') id: string): Promise<void> {
+    return await this.clientsService.remove(id);
   }
 }

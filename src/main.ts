@@ -6,6 +6,7 @@ import { AllExceptionsFilter } from './common/filters/http-exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.setGlobalPrefix('api/v1');
   const config = new DocumentBuilder()
     .setTitle('Api Basica')
     .setDescription('Prueba Tegnica')
@@ -16,11 +17,12 @@ async function bootstrap() {
       'https://www.linkedin.com/in/digitalexport/',
     )
     .build();
-  const document = SwaggerModule.createDocument(app, config);
+  const document = SwaggerModule.createDocument(app, config, {
+    ignoreGlobalPrefix: false,
+  });
   SwaggerModule.setup('api', app, document);
 
   app.useGlobalPipes(new ValidationPipe());
-  app.setGlobalPrefix('api/v1');
   app.useGlobalFilters(new AllExceptionsFilter());
   await app.listen(8080);
 }

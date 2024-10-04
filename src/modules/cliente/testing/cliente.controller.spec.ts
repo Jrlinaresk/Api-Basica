@@ -1,20 +1,20 @@
 // src/clients/clients.controller.spec.ts
 import { Test, TestingModule } from '@nestjs/testing';
-import { ClientsController } from './cliente.controller';
 import * as bcrypt from 'bcryptjs';
-import { ClientsService } from './cliente.service';
-import { CreateClientDto } from './dto/create_client.dto';
+import { ClientsController } from '../cliente.controller';
+import { ClientsService } from '../cliente.service';
+import { CreateClientDto } from '../dto/create_client.dto';
 
 const mockClient = {
-  _id: '1',
-  name: 'John Doe',
-  email: 'johndoe@example.com',
-  phone: '123456789',
-  password: 'hashedPassword',
+  _id: '66ff5508dbf3686484eaba87',
+  name: 'Johsan Doe',
+  email: 'johnssdoe@example.com',
+  phone: '123156289',
+  password: 'pL@assword123',
   toObject: jest.fn().mockReturnValue({
-    _id: '1',
-    name: 'John Doe',
-    email: 'johndoe@example.com',
+    _id: '66ff5508dbf3686484eaba87',
+    name: 'Johsan Doe',
+    email: 'johnssdoe@example.com',
   }),
 };
 
@@ -23,6 +23,7 @@ const mockClientsService = {
   findAll: jest.fn().mockResolvedValue([mockClient]),
   update: jest.fn().mockResolvedValue(mockClient),
   remove: jest.fn().mockResolvedValue(mockClient),
+  findOneByEmail: jest.fn().mockResolvedValue(mockClient),
 };
 
 describe('ClientsController', () => {
@@ -53,10 +54,10 @@ describe('ClientsController', () => {
       jest.spyOn(bcrypt, 'hash').mockResolvedValue('hashedPassword');
 
       const createClientDto: CreateClientDto = {
-        name: 'John Doe',
-        email: 'johndoe@example.com',
-        phone: '123456789',
-        password: 'password123',
+        name: 'Johsan Doe',
+        email: 'johnssdoe@example.com',
+        phone: '123156289',
+        password: 'pL@assword123',
       };
 
       const result = await controller.create(createClientDto);
@@ -67,7 +68,7 @@ describe('ClientsController', () => {
 
   describe('findAll', () => {
     it('should return an array of clients', async () => {
-      const result = await controller.findAll();
+      const result = await controller.findAllClients();
       expect(result).toEqual([mockClient]);
       expect(service.findAll).toHaveBeenCalled();
     });

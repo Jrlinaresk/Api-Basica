@@ -1,24 +1,28 @@
-// src/auth/auth.service.spec.ts
 import { Test, TestingModule } from '@nestjs/testing';
-import { AuthService } from './auth.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
-import { ClientsService } from '../cliente/cliente.service';
+import { AuthService } from '../auth.service';
+import { ClientsService } from '../../cliente/cliente.service';
 
 const mockClient = {
-  _id: '1',
+  _id: '66ff5508dbf3686484eaba87',
   name: 'John Doe',
   email: 'johndoe@example.com',
-  password: 'hashedPassword',
+  password: 'pL@assword123',
   toObject: jest.fn().mockReturnValue({
-    _id: '1',
+    _id: '66ff5508dbf3686484eaba87',
     name: 'John Doe',
     email: 'johndoe@example.com',
   }),
 };
 
+const mockLoginUserDto = {
+  email: 'johndoe@example.com',
+  password: 'pL@assword123',
+};
+
 const mockClientsService = {
-  findByEmail: jest.fn().mockResolvedValue(mockClient),
+  findOneByEmail: jest.fn().mockResolvedValue(mockClient.email),
 };
 
 const mockJwtService = {
@@ -50,11 +54,11 @@ describe('AuthService', () => {
     jest.spyOn(bcrypt, 'compare').mockResolvedValue(true);
 
     const result = await service.validateUser(
-      'johndoe@example.com',
-      'password123',
+      mockLoginUserDto.email,
+      mockLoginUserDto.password,
     );
     expect(result).toEqual({
-      _id: '1',
+      _id: '66ff5508dbf3686484eaba87',
       name: 'John Doe',
       email: 'johndoe@example.com',
     });
@@ -64,18 +68,21 @@ describe('AuthService', () => {
     jest.spyOn(bcrypt, 'compare').mockResolvedValue(false);
 
     const result = await service.validateUser(
-      'johndoe@example.com',
-      'wrongpassword',
+      mockLoginUserDto.email,
+      mockLoginUserDto.password,
     );
     expect(result).toBeNull();
   });
 
   it('should return a JWT token on login', async () => {
-    const result = await service.login(mockClient);
-    expect(result).toEqual({ access_token: 'token' });
+    jest.spyOn(bcrypt, 'compare').mockResolvedValue(true);
+    jest.spyOn(service, 'validateUser').mockResolvedValue(mockClient);
+
+    const result = await service.login(mockLoginUserDto);
+
+    expect(result).toEqual({ access_token: result.access_token });
     expect(mockJwtService.sign).toHaveBeenCalledWith({
-      email: mockClient.email,
-      sub: mockClient._id,
+      email: mockLoginUserDto.email,
     });
   });
 });

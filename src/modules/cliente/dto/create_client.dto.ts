@@ -5,6 +5,8 @@ import {
   IsString,
   MinLength,
   MaxLength,
+  Length,
+  Matches,
 } from 'class-validator';
 
 export class CreateClientDto {
@@ -38,6 +40,9 @@ export class CreateClientDto {
   })
   @IsNotEmpty({ message: 'El número de teléfono es obligatorio.' })
   @IsString({ message: 'El número de teléfono debe ser una cadena de texto.' })
+  @Matches(/^\+?[1-9]\d{1,14}$/, {
+    message: 'El número de teléfono no es válido.',
+  })
   phone: string;
 
   @ApiProperty({
@@ -46,6 +51,16 @@ export class CreateClientDto {
   })
   @IsNotEmpty({ message: 'La contraseña es obligatoria.' })
   @IsString({ message: 'La contraseña debe ser una cadena de texto.' })
-  @MinLength(8, { message: 'La contraseña debe tener al menos 8 caracteres.' })
+  @Length(8) // Longitud mínima de 8 caracteres
+  @Matches(/(?=.*[a-z])/, {
+    message: 'debe contener al menos una letra minúscula',
+  })
+  @Matches(/(?=.*[A-Z])/, {
+    message: 'debe contener al menos una letra mayúscula',
+  })
+  @Matches(/(?=.*[0-9])/, { message: 'debe contener al menos un número' })
+  @Matches(/(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?])/, {
+    message: 'debe contener al menos un carácter especial',
+  })
   password: string;
 }
