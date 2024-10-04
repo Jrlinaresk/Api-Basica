@@ -11,11 +11,11 @@ export class ClientsService {
 
   async create(createClientDto: CreateClientDto): Promise<Client> {
     const hashedPassword = await bcrypt.hash(createClientDto.password, 10);
-    const createdClient = new this.clientModel({
+    const createdClient = await this.clientModel.create({
       ...createClientDto,
       password: hashedPassword,
     });
-    return createdClient.save();
+    return createdClient;
   }
 
   async findAll(email?: string): Promise<Client[]> {

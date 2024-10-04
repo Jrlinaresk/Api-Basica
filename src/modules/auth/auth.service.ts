@@ -14,7 +14,6 @@ export class AuthService {
   async validateUser(email: string, pass: string): Promise<any> {
     const client = await this.clientsService.findByEmail(email);
     if (client && (await bcrypt.compare(pass, client.password))) {
-      // Devuelve solo la información relevante del usuario sin la contraseña
       return { ...client.toObject(), password: undefined };
     }
     return null;
