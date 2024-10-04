@@ -1,5 +1,3 @@
-// enums/client-messages.enum.ts
-
 export enum ClientMessages {
   CLIENT_CREATED_SUCCESSFULLY = 'Cliente creado exitosamente.',
   BAD_REQUEST = 'Solicitud incorrecta.',

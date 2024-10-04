@@ -1,4 +1,3 @@
-// client.operation-summaries.ts
 export enum ClientOperationSummaries {
   CREATE_CLIENT = 'Crear un nuevo cliente',
   FIND_CLIENT_BY_ID = 'Obtener un cliente por ID',

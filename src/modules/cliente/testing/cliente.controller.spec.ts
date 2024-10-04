@@ -1,4 +1,3 @@
-// src/clients/clients.controller.spec.ts
 import { Test, TestingModule } from '@nestjs/testing';
 import * as bcrypt from 'bcryptjs';
 import { ClientsController } from '../cliente.controller';

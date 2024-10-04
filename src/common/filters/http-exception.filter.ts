@@ -9,7 +9,7 @@ import {
 import { Response } from 'express';
 import { ValidationError } from 'class-validator';
 
-@Catch() // Captura todas las excepciones
+@Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
   catch(exception: unknown, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
@@ -26,7 +26,6 @@ export class AllExceptionsFilter implements ExceptionFilter {
       errorResponse.message = exception.getResponse();
     }
 
-    // Manejo de errores de validación de class-validator
     if (exception instanceof BadRequestException) {
       status = HttpStatus.BAD_REQUEST;
       const validationErrors = exception.getResponse() as {
@@ -39,11 +38,10 @@ export class AllExceptionsFilter implements ExceptionFilter {
         timestamp: new Date().toISOString(),
         path: request.url,
         message: 'Validation failed',
-        errors: validationErrors.errors, // Agrega los errores de validación
+        errors: validationErrors.errors,
       };
     }
 
-    // Envío de la respuesta
     response.status(status).json(errorResponse);
   }
 }
